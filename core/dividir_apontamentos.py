@@ -14,6 +14,6 @@ def split_pdf(arquivo_entrada):
             saida = PdfFileWriter()
             saida.addPage(ponto.getPage(p))
             funcionario = funcionarios[p].columns[0:1]
-            with open(f"media/{funcionario[0]}.pdf".replace(':',''), "wb") as saidaStream:
+            with open(f"media/saidaponto/{funcionario[0]}.pdf".replace(':',''), "wb") as saidaStream:
                 saida.write(saidaStream)
 
