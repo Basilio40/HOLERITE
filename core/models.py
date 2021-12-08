@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from core.dividir_apontamentos import *
+from core.dividir_holerites import *
 
 class MixData(models.Model):
     data_insercao = models.DateTimeField(
@@ -43,3 +44,8 @@ class Funcionario(MixData):
 def pos_save_ponto(instance, created, **kargs):
     print(f"SALVANDO O {instance.caminho_arquivo}")
     split_pdf(instance.caminho_arquivo.path)
+
+@receiver(post_save, sender=Holerite)
+def pos_save_holerite(instance, created, **kargs):
+    print(f"SALVANDO O {instance.caminho_arquivo}")
+    carregaholerite(instance.caminho_arquivo.path)
