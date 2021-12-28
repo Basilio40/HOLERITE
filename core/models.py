@@ -1,8 +1,28 @@
+from os import makedirs
 from django.db import models
 from django.dispatch import receiver
+from os.path import join, exists, dirname
 from django.db.models.signals import post_save
 from core.dividir_apontamentos import split_pdf
 from core.dividir_holerites import carregaholerite
+from django.conf import settings
+
+
+def caminho_upload(src, instance):
+    def verificar_caminho_cria(caminho):
+        caminho_arquivo = dirname(settings.PDFS)
+        if not exists(caminho_arquivo):
+            try:
+                makedirs(caminho_arquivo)
+                return True
+            except Exception as e:
+                print(f"ERRO ENCONTRADO AO TENTAR CRIAR CAMINHO {caminho} {e}")
+                return False
+
+    caminho_arquivo = join(settings.PDFS, instance)
+    if not verificar_caminho_cria(caminho_arquivo):
+        return caminho_arquivo
+    return False
 
 
 class MixData(models.Model):
@@ -12,27 +32,31 @@ class MixData(models.Model):
     data_modificacao = models.DateTimeField(
         auto_now_add=True, verbose_name="Data de Modificação"
     )
+
     class Meta:
         abstract = True
 
+
 class FilePdf(MixData):
-    caminho_arquivo = models.FileField()
+    caminho_arquivo = models.FileField(upload_to=caminho_upload)
     nome_arquivo = models.CharField(max_length=100)
 
 
 class Holerite(FilePdf):
     mes = models.DateField()
-    ano = models.IntegerField()    
+    ano = models.IntegerField()
 
 
 class Ponto(FilePdf):
-    mes_choices = (("Jan", "Janeiro"), ("Fev", "Feveiro"), ("Mar", "Março"),("Abr" , "Abril"),("Mai","Maio"),("Jun","Junho"),("Jul","Julho"),("Ago","Agosto"),("Set","Setembro"),
-                   ("Out","Outubro"),("Nov","Novembro"),("Dez","Dezembro"),)
+    mes_choices = (("Jan", "Janeiro"), ("Fev", "Feveiro"), ("Mar", "Março"),
+                   ("Abr", "Abril"), ("Mai", "Maio"), ("Jun", "Junho"), ("Jul", "Julho"),
+                   ("Ago", "Agosto"), ("Set", "Setembro"), ("Out", "Outubro"),
+                   ("Nov", "Novembro"), ("Dez", "Dezembro"),)
     mes = models.CharField(max_length=4, choices=mes_choices,
-                        default=mes_choices[0][0],)
+                           default=mes_choices[0][0],)
     ano = models.IntegerField()
-    
-    def __str__(self) :
+
+    def __str__(self):
         return self.mes
 
 
@@ -42,12 +66,11 @@ class Funcionario(MixData):
     ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE)
 
 
-@receiver(post_save, sender=Holerite)
+# @receiver(post_save, sender=Holerite)
 def pos_save_ponto(instance, created, **kargs):
-    print(f"SALVANDO O {instance.caminho_arquivo}")
     split_pdf(instance.caminho_arquivo.path)
 
-@receiver(post_save, sender=Ponto)
+
+# @receiver(post_save, sender=Ponto)
 def pos_save_holerite(instance, created, **kargs):
-    print(f"SALVANDO O {instance.caminho_arquivo}")
     carregaholerite(instance.caminho_arquivo.path)

@@ -1,2 +1,4 @@
 *.pyc
+*.pdf
 venv/
+__pycache__/
