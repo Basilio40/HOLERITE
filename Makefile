@@ -8,7 +8,7 @@ install-requirements:
 	venv/bin/pip install -r requirements.txt
 
 run:
-	python3 manage.py runserver 0.0.0.0:5000
+	python3 manage.py runserver
 
 recreate_db:
 	python3 manage.py recreate_db

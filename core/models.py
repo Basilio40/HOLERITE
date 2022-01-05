@@ -3,14 +3,13 @@ from django.db import models
 from django.dispatch import receiver
 from os.path import join, exists, dirname
 from django.db.models.signals import post_save
-from core.dividir_apontamentos import split_pdf
-from core.dividir_holerites import carregaholerite
+from core.split_pdf import split_pdf, carregaholerite
 from django.conf import settings
 
 
 def caminho_upload(src, instance):
     def verificar_caminho_cria(caminho):
-        caminho_arquivo = dirname(settings.PDFS)
+        caminho_arquivo = dirname(join(settings.MEDIA_ROOT, settings.PDFS))
         if not exists(caminho_arquivo):
             try:
                 makedirs(caminho_arquivo)
@@ -39,12 +38,22 @@ class MixData(models.Model):
 
 class FilePdf(MixData):
     caminho_arquivo = models.FileField(upload_to=caminho_upload)
-    nome_arquivo = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.caminho_arquivo}"
 
 
 class Holerite(FilePdf):
-    mes = models.DateField()
+    mes_choices = (("Jan", "Janeiro"), ("Fev", "Feveiro"), ("Mar", "Março"),
+                   ("Abr", "Abril"), ("Mai", "Maio"), ("Jun", "Junho"), ("Jul", "Julho"),
+                   ("Ago", "Agosto"), ("Set", "Setembro"), ("Out", "Outubro"),
+                   ("Nov", "Novembro"), ("Dez", "Dezembro"),)
+    mes = models.CharField(max_length=4, choices=mes_choices,
+                           default=mes_choices[0][0],)
     ano = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.mes} {self.ano} " + super().__str__()
 
 
 class Ponto(FilePdf):
@@ -57,7 +66,7 @@ class Ponto(FilePdf):
     ano = models.IntegerField()
 
     def __str__(self):
-        return self.mes
+        return f"{self.mes} {self.ano} " + super().__str__()
 
 
 class Funcionario(MixData):
@@ -65,12 +74,15 @@ class Funcionario(MixData):
     holerite = models.ForeignKey(Holerite, on_delete=models.CASCADE)
     ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f"{self.nome} {self.holerite} {self.ponto}"
 
-# @receiver(post_save, sender=Holerite)
+
+@receiver(post_save, sender=Ponto)
 def pos_save_ponto(instance, created, **kargs):
     split_pdf(instance.caminho_arquivo.path)
 
 
-# @receiver(post_save, sender=Ponto)
+@receiver(post_save, sender=Holerite)
 def pos_save_holerite(instance, created, **kargs):
     carregaholerite(instance.caminho_arquivo.path)
