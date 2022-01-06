@@ -71,8 +71,8 @@ class Ponto(FilePdf):
 
 class Funcionario(MixData):
     nome = models.CharField(max_length=100)
-    holerite = models.ForeignKey(Holerite, on_delete=models.CASCADE)
-    ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE)
+    holerite = models.ForeignKey(Holerite, on_delete=models.CASCADE, null=True)
+    ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.nome} {self.holerite} {self.ponto}"
@@ -80,9 +80,17 @@ class Funcionario(MixData):
 
 @receiver(post_save, sender=Ponto)
 def pos_save_ponto(instance, created, **kargs):
-    split_pdf(instance.caminho_arquivo.path)
+    funcionarios = split_pdf(instance.caminho_arquivo.path)
+    print(funcionarios)
 
 
 @receiver(post_save, sender=Holerite)
 def pos_save_holerite(instance, created, **kargs):
-    carregaholerite(instance.caminho_arquivo.path)
+    def registrar_funcionarios(funcionarios):
+        try:
+            [Funcionario.objects.create(nome=func, holerite=instance.holerite)
+             for func in funcionarios]
+        except Exception as e:
+            print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
+    funcionarios = carregaholerite(instance.caminho_arquivo.path)
+    registrar_funcionarios(funcionarios)

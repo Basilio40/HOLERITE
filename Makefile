@@ -15,3 +15,6 @@ recreate_db:
 
 migration:
 	python3 manage.py makemigrations; python3 manage.py migrate
+
+clean_pdf:
+	rm -Rf media/*
