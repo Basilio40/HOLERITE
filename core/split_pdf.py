@@ -16,14 +16,24 @@ def criar_pasta(pst):
 def split_pdf(arquivo_entrada):
     pst_destino = join("media", "PDF", "saidaponto")
     criar_pasta(join(getcwd(), pst_destino))
-    ponto = PdfFileReader(open(arquivo_entrada, 'rb'))
+    holerites = PdfFileReader(open(arquivo_entrada, 'rb'))
     funcionarios = []
 
-    for pagina in range(ponto.numPages):
+    def f(x): return re.sub(r'\/|\\', '', x)
+    funcionarios = []
+
+    for inx in range(holerites.numPages):
         saida = PdfFileWriter()
-        saida.addPage(ponto.getPage(pagina))
-        funcionario = pagina.extractText()
-        with open(join(pst_destino, f"{funcionario[0]}.pdf".replace(':', '')), "wb") as saidaStream:
+        saida.addPage(holerites.getPage(inx))
+        pagina = holerites.getPage(inx)
+        conteudo = pagina.extractText()
+        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
+            continue
+
+        find = re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)[0][-1]
+        funcionario = f(find)
+
+        with open(join(pst_destino, f"{funcionario}.pdf"), "wb") as saidaStream:
             saida.write(saidaStream)
             funcionarios.append(funcionario)
     return funcionarios
@@ -37,10 +47,10 @@ def carregaholerite(pdf_arquivo):
     def f(x): return re.sub(r'\/|\\', '', x)
     funcionarios = []
 
-    for h in range(holerites.numPages):
+    for inx in range(holerites.numPages):
         saida = PdfFileWriter()
-        saida.addPage(holerites.getPage(h))
-        pagina = holerites.getPage(h)
+        saida.addPage(holerites.getPage(inx))
+        pagina = holerites.getPage(inx)
         conteudo = pagina.extractText()
         if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
             continue

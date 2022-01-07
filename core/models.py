@@ -80,8 +80,14 @@ class Funcionario(MixData):
 
 @receiver(post_save, sender=Ponto)
 def pos_save_ponto(instance, created, **kargs):
+    def registrar_funcionarios(funcionarios):
+        try:
+            [Funcionario.objects.create(nome=func, holerite=instance.holerite)
+             for func in funcionarios]
+        except Exception as e:
+            print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
     funcionarios = split_pdf(instance.caminho_arquivo.path)
-    print(funcionarios)
+    registrar_funcionarios(funcionarios)
 
 
 @receiver(post_save, sender=Holerite)
