@@ -3,6 +3,7 @@ import re
 from os import makedirs, getcwd
 from os.path import exists, dirname, join
 from PyPDF2.pdf import PdfFileReader, PdfFileWriter
+from pdf2image import convert_from_path
 
 
 def criar_pasta(pst):
@@ -14,6 +15,7 @@ def criar_pasta(pst):
 
 
 def split_pdf(arquivo_entrada):
+    print(f"INICIANDO O PROCESSAMENTO DO PDF {arquivo_entrada}")
     pst_destino = join("media", "PDF", "saidaponto")
     criar_pasta(join(getcwd(), pst_destino))
     holerites = PdfFileReader(open(arquivo_entrada, 'rb'))
@@ -23,11 +25,12 @@ def split_pdf(arquivo_entrada):
     funcionarios = []
 
     for inx in range(holerites.numPages):
+        print(f"TENTANDO PEGAR CONTEUDO DA PAGINA {inx}/{holerites.numPages}")
         saida = PdfFileWriter()
         saida.addPage(holerites.getPage(inx))
         pagina = holerites.getPage(inx)
         conteudo = pagina.extractText()
-        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
+        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) in [0, 1]:
             continue
 
         find = re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)[0][-1]
@@ -40,6 +43,7 @@ def split_pdf(arquivo_entrada):
 
 
 def carregaholerite(pdf_arquivo):
+    print(f"INICIANDO O PROCESSAMENTO DO PDF {pdf_arquivo}")
     holerites = PdfFileReader(open(pdf_arquivo,  'rb'))
     pst_destino = join("media", "PDF", "holerite")
     criar_pasta(join(getcwd(), pst_destino))
@@ -48,11 +52,12 @@ def carregaholerite(pdf_arquivo):
     funcionarios = []
 
     for inx in range(holerites.numPages):
+        print(f"TENTANDO PEGAR CONTEUDO DA PAGINA {inx}/{holerites.numPages}")
         saida = PdfFileWriter()
         saida.addPage(holerites.getPage(inx))
         pagina = holerites.getPage(inx)
         conteudo = pagina.extractText()
-        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
+        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) in [0, 1]:
             continue
 
         find = re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)[0][-1]
