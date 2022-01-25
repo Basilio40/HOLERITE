@@ -73,6 +73,7 @@ class Funcionario(MixData):
     nome = models.CharField(max_length=100)
     holerite = models.ForeignKey(Holerite, on_delete=models.CASCADE, null=True)
     ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE, null=True)
+    caminho_arquivo = models.FileField(upload_to=caminho_upload)
 
     def __str__(self):
         return f"{self.nome} {self.holerite} {self.ponto}"
@@ -82,7 +83,8 @@ class Funcionario(MixData):
 def pos_save_ponto(instance, created, **kargs):
     def registrar_funcionarios(funcionarios):
         try:
-            [Funcionario.objects.create(nome=func, holerite=instance.holerite)
+            [Funcionario.objects.create(nome=func['nome'], holerite=instance.holerite,
+                                        caminho_arquivo=func['caminho_arquivo'])
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
@@ -94,7 +96,8 @@ def pos_save_ponto(instance, created, **kargs):
 def pos_save_holerite(instance, created, **kargs):
     def registrar_funcionarios(funcionarios):
         try:
-            [Funcionario.objects.create(nome=func, holerite=instance.holerite)
+            [Funcionario.objects.create(nome=func['nome'], holerite=instance.holerite,
+                                        caminho_arquivo=func['caminho_arquivo'])
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")

@@ -5,6 +5,7 @@ activate-venv:
 	source venv/bin/activate
 
 install-requirements:
+	sudo apt-get install tesseract-ocr
 	venv/bin/pip install -r requirements.txt
 
 run:
