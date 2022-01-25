@@ -8,13 +8,16 @@ install-requirements:
 	venv/bin/pip install -r requirements.txt
 
 run:
-	python3 manage.py runserver
+	venv/bin/python manage.py runserver 0.0.0.0:8000
 
 recreate_db:
-	python3 manage.py recreate_db
+	venv/bin/python manage.py recreate_db
 
 migration:
-	python3 manage.py makemigrations; python3 manage.py migrate
+	venv/bin/python manage.py makemigrations; venv/bin/python manage.py migrate
 
 clean_pdf:
 	rm -Rf media/*
+	rm db.*
+	venv/bin/python manage.py migrate
+	venv/bin/python manage.py createsuperuser

@@ -3,7 +3,7 @@ from django.db import models
 from django.dispatch import receiver
 from os.path import join, exists, dirname
 from django.db.models.signals import post_save
-from core.split_pdf import split_pdf, carregaholerite
+from core.split_pdf import transforma_pdf_img_funcionarios
 from django.conf import settings
 
 
@@ -86,7 +86,7 @@ def pos_save_ponto(instance, created, **kargs):
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
-    funcionarios = split_pdf(instance.caminho_arquivo.path)
+    funcionarios = transforma_pdf_img_funcionarios(instance.caminho_arquivo.path, 'PONTO')
     registrar_funcionarios(funcionarios)
 
 
@@ -98,5 +98,5 @@ def pos_save_holerite(instance, created, **kargs):
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
-    funcionarios = carregaholerite(instance.caminho_arquivo.path)
+    funcionarios = transforma_pdf_img_funcionarios(instance.caminho_arquivo.path, 'HOLERITE')
     registrar_funcionarios(funcionarios)

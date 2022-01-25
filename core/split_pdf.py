@@ -1,8 +1,8 @@
-from tabula import read_pdf
-import re
+from re import findall, split
 from os import makedirs, getcwd
-from os.path import exists, dirname, join
-from PyPDF2.pdf import PdfFileReader, PdfFileWriter
+from pdf2image import convert_from_path
+from pytesseract import image_to_string
+from os.path import exists, dirname, join, basename
 
 
 def criar_pasta(pst):
@@ -13,52 +13,33 @@ def criar_pasta(pst):
             print(f"ERRO EM CRIAR PASTA {e}")
 
 
-def split_pdf(arquivo_entrada):
-    pst_destino = join("media", "PDF", "saidaponto")
-    criar_pasta(join(getcwd(), pst_destino))
-    holerites = PdfFileReader(open(arquivo_entrada, 'rb'))
-    funcionarios = []
+def extrair_texto(img):
+    return image_to_string(img)
 
-    def f(x): return re.sub(r'\/|\\', '', x)
-    funcionarios = []
 
-    for inx in range(holerites.numPages):
-        saida = PdfFileWriter()
-        saida.addPage(holerites.getPage(inx))
-        pagina = holerites.getPage(inx)
-        conteudo = pagina.extractText()
-        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
+def transforma_pdf_img_funcionarios(pdf_arquivo, dst):
+    print(f"INICIANDO O PROCESSAMENTO DO PDF {basename(pdf_arquivo)}")
+    pst_destino = join(getcwd(), "media", "PDF", dst)
+    criar_pasta(pst_destino)
+
+    funcionarios = []
+    pdftoimage = convert_from_path(pdf_arquivo)
+    def l(x): return x if len(x) == 0 and '-' not in x else split("\s-\s|\n", str(x))[-1][:-3]
+    for inx in range(len(pdftoimage)):
+        conteudo = extrair_texto(pdftoimage[inx])
+
+        if conteudo == '' or len(str(conteudo)) in [0, 1]:
             continue
 
-        find = re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)[0][-1]
-        funcionario = f(find)
-
-        with open(join(pst_destino, f"{funcionario}.pdf"), "wb") as saidaStream:
-            saida.write(saidaStream)
-            funcionarios.append(funcionario)
-    return funcionarios
-
-
-def carregaholerite(pdf_arquivo):
-    holerites = PdfFileReader(open(pdf_arquivo,  'rb'))
-    pst_destino = join("media", "PDF", "holerite")
-    criar_pasta(join(getcwd(), pst_destino))
-
-    def f(x): return re.sub(r'\/|\\', '', x)
-    funcionarios = []
-
-    for inx in range(holerites.numPages):
-        saida = PdfFileWriter()
-        saida.addPage(holerites.getPage(inx))
-        pagina = holerites.getPage(inx)
-        conteudo = pagina.extractText()
-        if len(re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)) == 1:
+        funcionario = l(findall("\n\d+\s-\s[\w|\\n]*", conteudo))
+        if funcionario == '' or len(str(funcionario)) in [0, 1]:
             continue
 
-        find = re.findall(r'(\d.{3,4})+[0-9]{2,3} - (\w.+)', conteudo)[0][-1]
-        funcionario = f(find)
+        funcionario += f"_{inx}.jpg"
+        funcionarios.append(funcionario)
 
-        with open(join(pst_destino, f"{funcionario}.pdf"), "wb") as saidaStream:
-            saida.write(saidaStream)
-            funcionarios.append(funcionario)
+        pdftoimage[inx].save(
+            join(pst_destino, funcionario), 'JPEG'
+        )
+
     return funcionarios
