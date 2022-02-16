@@ -6,6 +6,7 @@ activate-venv:
 
 install-requirements:
 	sudo apt-get install tesseract-ocr
+	sudo apt install poppler-utils
 	venv/bin/pip install -r requirements.txt
 
 run:
