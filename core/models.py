@@ -88,7 +88,7 @@ def pos_save_ponto(instance, created, **kargs):
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
-    funcionarios = transforma_pdf_img_funcionarios(instance.caminho_arquivo.path, 'PONTO')
+    funcionarios = transforma_pdf_img_funcionarios(instance, 'PONTO')
     registrar_funcionarios(funcionarios)
 
 
@@ -101,5 +101,5 @@ def pos_save_holerite(instance, created, **kargs):
              for func in funcionarios]
         except Exception as e:
             print(f"ERRO EM TENTAR REGISTRAR FUNCIONARIOS {e}")
-    funcionarios = transforma_pdf_img_funcionarios(instance.caminho_arquivo.path, 'HOLERITE')
+    funcionarios = transforma_pdf_img_funcionarios(instance, 'HOLERITE')
     registrar_funcionarios(funcionarios)
